@@ -1,5 +1,35 @@
 const crypto = require('crypto');
-const luhn = require('luhn');
+
+// Simple Luhn algorithm implementation
+function generateLuhnCheckDigit(number) {
+  let sum = 0;
+  let isEven = false;
+  
+  // Process from right to left
+  for (let i = number.length - 1; i >= 0; i--) {
+    let digit = parseInt(number[i]);
+    
+    if (isEven) {
+      digit *= 2;
+      if (digit > 9) {
+        digit -= 9;
+      }
+    }
+    
+    sum += digit;
+    isEven = !isEven;
+  }
+  
+  return (10 - (sum % 10)) % 10;
+}
+
+function validateLuhn(number) {
+  const checkDigit = parseInt(number.slice(-1));
+  const numberWithoutCheck = number.slice(0, -1);
+  const calculatedCheck = generateLuhnCheckDigit(numberWithoutCheck);
+  
+  return checkDigit === calculatedCheck;
+}
 
 class CardGenerator {
   constructor() {
@@ -70,7 +100,7 @@ class CardGenerator {
     const partialCardNumber = bin + middle;
 
     // Calculate check digit using Luhn algorithm
-    const checkDigit = luhn.generate(partialCardNumber);
+    const checkDigit = generateLuhnCheckDigit(partialCardNumber);
 
     return partialCardNumber + checkDigit;
   }
@@ -206,7 +236,7 @@ class CardGenerator {
 
   // Validate card number using Luhn algorithm
   validateCardNumber(cardNumber) {
-    return luhn.validate(cardNumber);
+    return validateLuhn(cardNumber);
   }
 
   // Generate multiple cards for testing
