@@ -1,8 +1,20 @@
+# POS SDK 7220 - .gitignore
+# Comprehensive ignore patterns for Node.js POS application
+
 # Dependencies
 node_modules/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+package-lock.json
+yarn.lock
+
+# Build outputs
+dist/
+build/
+out/
+*.tgz
+*.tar.gz
 
 # Environment variables
 .env
@@ -10,13 +22,25 @@ yarn-error.log*
 .env.development.local
 .env.test.local
 .env.production.local
+.env.*.local
+
+# Configuration files with sensitive data
+config/pos-sdk.json
+config/*.local.json
+config/secrets.json
+config/keys.json
 
 # Logs
-logs
+logs/
 *.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+.pnpm-debug.log*
 
 # Runtime data
-pids
+pids/
 *.pid
 *.seed
 *.pid.lock
@@ -24,19 +48,38 @@ pids
 # Coverage directory used by tools like istanbul
 coverage/
 *.lcov
+.nyc_output/
 
 # nyc test coverage
 .nyc_output
 
+# Grunt intermediate storage (https://gruntjs.com/creating-plugins#storing-task-files)
+.grunt
+
+# Bower dependency directory (https://bower.io/)
+bower_components
+
+# node-waf configuration
+.lock-wscript
+
+# Compiled binary addons (https://nodejs.org/api/addons.html)
+build/Release
+
 # Dependency directories
 node_modules/
 jspm_packages/
+
+# TypeScript cache
+*.tsbuildinfo
 
 # Optional npm cache directory
 .npm
 
 # Optional eslint cache
 .eslintcache
+
+# Optional stylelint cache
+.stylelintcache
 
 # Microbundle cache
 .rpt2_cache/
@@ -53,8 +96,12 @@ jspm_packages/
 # Yarn Integrity file
 .yarn-integrity
 
-# dotenv environment variables file
-.env.test
+# dotenv environment variable files
+.env
+.env.development.local
+.env.test.local
+.env.production.local
+.env.local
 
 # parcel-bundler cache (https://parceljs.org/)
 .cache
@@ -62,6 +109,7 @@ jspm_packages/
 
 # Next.js build output
 .next
+out
 
 # Nuxt.js build / generate output
 .nuxt
@@ -71,15 +119,32 @@ dist
 .cache/
 public
 
-# Storybook build outputs
-.out
-.storybook-out
+# Vuepress build output
+.vuepress/dist
 
-# Temporary folders
-tmp/
-temp/
+# Serverless directories
+.serverless/
 
-# Editor directories and files
+# FuseBox cache
+.fusebox/
+
+# DynamoDB Local files
+.dynamodb/
+
+# TernJS port file
+.tern-port
+
+# Stores VSCode versions used for testing VSCode extensions
+.vscode-test
+
+# yarn v2
+.yarn/cache
+.yarn/unplugged
+.yarn/build-state.yml
+.yarn/install-state.gz
+.pnp.*
+
+# IDEs and editors
 .vscode/
 .idea/
 *.swp
@@ -95,14 +160,327 @@ temp/
 ehthumbs.db
 Thumbs.db
 
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.temp
+
+# Backup files
+*.bak
+*.backup
+*.old
+*.orig
+
+# Test files
+test-results/
+coverage/
+.nyc_output/
+
+# Documentation build
+docs/build/
+docs/_build/
+
 # Docker
 .dockerignore
+docker-compose.override.yml
 
 # Database
 *.db
 *.sqlite
 *.sqlite3
 
-# Test files
-test-results/
-coverage/
+# SSL certificates
+*.pem
+*.key
+*.crt
+*.csr
+*.p12
+*.pfx
+
+# Hardware test files
+hardware-test-results/
+device-logs/
+
+# Transaction data (for development)
+data/transactions/
+data/cards/
+data/users/
+
+# Security keys and certificates
+keys/
+certificates/
+ssl/
+
+# Application specific
+pos-app.log
+pos-sdk.log
+hardware.log
+security.log
+network.log
+
+# PM2
+.pm2/
+
+# Systemd
+*.service
+*.timer
+
+# Backup directories
+backups/
+archives/
+
+# Cache directories
+.cache/
+cache/
+
+# Temporary POS data
+pos-temp/
+pos-cache/
+
+# Hardware device files (should not be committed)
+/dev/
+/sys/
+/proc/
+
+# Local development overrides
+local/
+local.*
+override.*
+
+# Development tools
+.eslintrc.local.js
+.prettierrc.local.js
+jest.config.local.js
+
+# Performance monitoring
+.perf/
+profiles/
+
+# Memory dumps
+*.heapsnapshot
+*.heapprofile
+
+# Core dumps
+core
+core.*
+
+# Crash reports
+crash-reports/
+*.dmp
+
+# Application state
+state/
+app-state/
+
+# User data
+user-data/
+user-settings/
+
+# Plugin data
+plugins/
+extensions/
+
+# Custom ignore patterns for POS SDK
+# Add any project-specific patterns below
+
+# POS device specific
+pos-device-config/
+device-settings/
+hardware-config/
+
+# Payment processing
+payment-logs/
+transaction-logs/
+card-data/
+
+# Network configuration
+network-config/
+wifi-config/
+cellular-config/
+
+# Security audit logs
+security-audit/
+compliance-reports/
+pci-reports/
+
+# Hardware test results
+hardware-tests/
+device-tests/
+component-tests/
+
+# OTA update files
+ota-updates/
+update-packages/
+firmware-updates/
+
+# Monitoring and metrics
+metrics/
+monitoring/
+health-checks/
+
+# Backup and recovery
+recovery/
+restore/
+snapshots/
+
+# Development and testing
+dev-data/
+test-data/
+mock-data/
+
+# Documentation builds
+docs-generated/
+api-docs/
+user-manuals/
+
+# Local development
+local-dev/
+dev-environment/
+test-environment/
+
+# CI/CD
+.ci/
+.cd/
+deployment/
+
+# Secrets and credentials
+secrets/
+credentials/
+passwords/
+tokens/
+
+# Vendor specific
+vendor/
+third-party/
+external/
+
+# Legacy and deprecated
+legacy/
+deprecated/
+old-versions/
+
+# Custom scripts
+custom-scripts/
+user-scripts/
+deployment-scripts/
+
+# Database migrations
+migrations/
+schema-changes/
+database-updates/
+
+# API versions
+api-versions/
+version-history/
+changelog/
+
+# Localization
+localization/
+translations/
+language-files/
+
+# Accessibility
+accessibility/
+a11y/
+screen-reader/
+
+# Performance optimization
+performance/
+optimization/
+benchmarks/
+
+# Security testing
+security-tests/
+penetration-tests/
+vulnerability-scans/
+
+# Compliance
+compliance/
+audit-trails/
+regulatory/
+
+# Business logic
+business-rules/
+workflows/
+processes/
+
+# Integration
+integrations/
+connectors/
+adapters/
+
+# Reporting
+reports/
+analytics/
+dashboards/
+
+# Notifications
+notifications/
+alerts/
+messages/
+
+# User management
+users/
+roles/
+permissions/
+
+# Audit and logging
+audit-logs/
+access-logs/
+activity-logs/
+
+# Error tracking
+error-logs/
+crash-reports/
+stack-traces/
+
+# Performance monitoring
+performance-logs/
+metrics-logs/
+monitoring-logs/
+
+# Network monitoring
+network-logs/
+connection-logs/
+traffic-logs/
+
+# Hardware monitoring
+hardware-logs/
+device-logs/
+sensor-logs/
+
+# Security monitoring
+security-logs/
+threat-logs/
+incident-logs/
+
+# Compliance monitoring
+compliance-logs/
+audit-logs/
+regulatory-logs/
+
+# Business monitoring
+business-logs/
+transaction-logs/
+activity-logs/
+
+# System monitoring
+system-logs/
+process-logs/
+resource-logs/
+
+# Application monitoring
+application-logs/
+app-logs/
+service-logs/
+
+# Infrastructure monitoring
+infrastructure-logs/
+infra-logs/
+platform-logs/
+
+# Custom monitoring
+custom-logs/
+specialized-logs/
+domain-logs/
