@@ -3,11 +3,14 @@ const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
+const path = require('path');
 const connectDB = require('./config/database');
 
 // Import routes
 const authRoutes = require('./routes/auth');
 const accountRoutes = require('./routes/accounts');
+const cardRoutes = require('./routes/cards');
+const bankingOperationsRoutes = require('./routes/banking-operations');
 
 const app = express();
 
@@ -43,6 +46,14 @@ app.use('/api/', limiter);
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
+// Serve static files
+app.use(express.static('public'));
+
+// Serve the main application for all routes
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
 // Request logging middleware
 app.use((req, res, next) => {
   console.log(`${new Date().toISOString()} - ${req.method} ${req.path}`);
@@ -52,6 +63,8 @@ app.use((req, res, next) => {
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/accounts', accountRoutes);
+app.use('/api/cards', cardRoutes);
+app.use('/api/banking', bankingOperationsRoutes);
 
 // Health check endpoint
 app.get('/health', (req, res) => {
