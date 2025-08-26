@@ -10,6 +10,7 @@ const connectDB = require('./config/database');
 const authRoutes = require('./routes/auth');
 const accountRoutes = require('./routes/accounts');
 const cardRoutes = require('./routes/cards');
+const bankingOperationsRoutes = require('./routes/banking-operations');
 
 const app = express();
 
@@ -63,6 +64,7 @@ app.use((req, res, next) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/accounts', accountRoutes);
 app.use('/api/cards', cardRoutes);
+app.use('/api/banking', bankingOperationsRoutes);
 
 // Health check endpoint
 app.get('/health', (req, res) => {
