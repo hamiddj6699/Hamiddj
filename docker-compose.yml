@@ -1,54 +1,350 @@
 version: '3.8'
 
+# Docker Compose برای POS SDK 7220
+# Docker Compose for POS SDK 7220
+
 services:
-  app:
-    build: .
+  # سرویس اصلی POS
+  pos-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: final
+    container_name: pos-sdk-7220
+    restart: unless-stopped
     ports:
       - "3000:3000"
+      - "9229:9229"  # پورت debug
     environment:
       - NODE_ENV=production
-      - PORT=3000
-      - MONGODB_URI=mongodb://mongo:27017/banking-app
-      - JWT_SECRET=your-super-secret-jwt-key-change-this-in-production
-      - JWT_EXPIRES_IN=24h
-    depends_on:
-      - mongo
-    restart: unless-stopped
-    networks:
-      - banking-network
-
-  mongo:
-    image: mongo:6.0
-    ports:
-      - "27017:27017"
-    environment:
-      - MONGO_INITDB_DATABASE=banking-app
+      - POS_APP_HOME=/app
+      - POS_APP_LOGS=/home/posuser/logs
+      - POS_APP_DATA=/home/posuser/data
+      - POS_APP_CONFIG=/app/config
+      - POS_DEVICE_ID=POS_7220_001
+      - POS_MODEL=7220
+      - POS_FIRMWARE=1.0.0
     volumes:
-      - mongo_data:/data/db
-      - ./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
-    restart: unless-stopped
+      - pos-logs:/home/posuser/logs
+      - pos-data:/home/posuser/data
+      - pos-config:/app/config
+      - /dev/ttyUSB0:/dev/ttyUSB0:rw  # پورت کارت‌خوان
+      - /dev/ttyUSB1:/dev/ttyUSB1:rw  # پورت چاپگر
+      - /dev/usb:/dev/usb:ro          # دستگاه‌های USB
+    devices:
+      - /dev/ttyUSB0:/dev/ttyUSB0
+      - /dev/ttyUSB1:/dev/ttyUSB1
+      - /dev/usb:/dev/usb
     networks:
-      - banking-network
-
-  mongo-express:
-    image: mongo-express:latest
-    ports:
-      - "8081:8081"
-    environment:
-      - ME_CONFIG_MONGODB_SERVER=mongo
-      - ME_CONFIG_MONGODB_PORT=27017
-      - ME_CONFIG_MONGODB_ADMINUSERNAME=
-      - ME_CONFIG_MONGODB_ADMINPASSWORD=
-      - ME_CONFIG_MONGODB_URL=mongodb://mongo:27017/
+      - pos-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
     depends_on:
-      - mongo
+      - pos-db
+      - pos-redis
+
+  # سرویس توسعه
+  pos-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: development
+    container_name: pos-sdk-7220-dev
     restart: unless-stopped
+    ports:
+      - "3001:3000"
+      - "9229:9229"
+    environment:
+      - NODE_ENV=development
+      - POS_APP_HOME=/app
+      - POS_APP_LOGS=/app/logs
+      - POS_APP_DATA=/app/data
+      - POS_APP_CONFIG=/app/config
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - pos-dev-logs:/app/logs
+      - pos-dev-data:/app/data
     networks:
-      - banking-network
+      - pos-network
+    profiles:
+      - development
+
+  # سرویس تست
+  pos-test:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: testing
+    container_name: pos-sdk-7220-test
+    environment:
+      - NODE_ENV=testing
+      - POS_APP_HOME=/app
+      - POS_APP_LOGS=/app/logs
+      - POS_APP_DATA=/app/data
+      - POS_APP_CONFIG=/app/config
+    volumes:
+      - .:/app
+      - /app/node_modules
+    networks:
+      - pos-network
+    profiles:
+      - testing
+
+  # سرویس امنیت
+  pos-security:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: security
+    container_name: pos-sdk-7220-security
+    environment:
+      - NODE_ENV=production
+    volumes:
+      - .:/app
+    networks:
+      - pos-network
+    profiles:
+      - security
+
+  # سرویس مستندسازی
+  pos-docs:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: docs
+    container_name: pos-sdk-7220-docs
+    environment:
+      - NODE_ENV=production
+    volumes:
+      - .:/app
+      - pos-docs:/app/docs
+    networks:
+      - pos-network
+    profiles:
+      - docs
+
+  # پایگاه داده PostgreSQL
+  pos-db:
+    image: postgres:13-alpine
+    container_name: pos-sdk-7220-db
+    restart: unless-stopped
+    environment:
+      - POSTGRES_DB=pos_sdk_7220
+      - POSTGRES_USER=pos_user
+      - POSTGRES_PASSWORD=pos_password_secure_123
+      - POSTGRES_INITDB_ARGS=--encoding=UTF-8 --lc-collate=C --lc-ctype=C
+    volumes:
+      - pos-db-data:/var/lib/postgresql/data
+      - ./docker/postgres/init:/docker-entrypoint-initdb.d
+    ports:
+      - "5432:5432"
+    networks:
+      - pos-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U pos_user -d pos_sdk_7220"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  # Redis برای کش و session
+  pos-redis:
+    image: redis:6-alpine
+    container_name: pos-sdk-7220-redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes --requirepass redis_password_secure_123
+    volumes:
+      - pos-redis-data:/data
+    ports:
+      - "6379:6379"
+    networks:
+      - pos-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  # Nginx برای reverse proxy
+  pos-nginx:
+    image: nginx:alpine
+    container_name: pos-sdk-7220-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./docker/nginx/conf.d:/etc/nginx/conf.d:ro
+      - ./docker/nginx/ssl:/etc/nginx/ssl:ro
+      - pos-nginx-logs:/var/log/nginx
+    networks:
+      - pos-network
+    depends_on:
+      - pos-app
+    profiles:
+      - production
+
+  # Prometheus برای مانیتورینگ
+  pos-prometheus:
+    image: prom/prometheus:latest
+    container_name: pos-sdk-7220-prometheus
+    restart: unless-stopped
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./docker/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - pos-prometheus-data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=200h'
+      - '--web.enable-lifecycle'
+    networks:
+      - pos-network
+    profiles:
+      - monitoring
+
+  # Grafana برای نمایشگر
+  pos-grafana:
+    image: grafana/grafana:latest
+    container_name: pos-sdk-7220-grafana
+    restart: unless-stopped
+    ports:
+      - "3001:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin_password_secure_123
+      - GF_USERS_ALLOW_SIGN_UP=false
+    volumes:
+      - pos-grafana-data:/var/lib/grafana
+      - ./docker/grafana/provisioning:/etc/grafana/provisioning
+    networks:
+      - pos-network
+    depends_on:
+      - pos-prometheus
+    profiles:
+      - monitoring
+
+  # Elasticsearch برای لاگ
+  pos-elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.17.0
+    container_name: pos-sdk-7220-elasticsearch
+    restart: unless-stopped
+    environment:
+      - discovery.type=single-node
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m
+      - xpack.security.enabled=false
+    volumes:
+      - pos-elasticsearch-data:/usr/share/elasticsearch/data
+    ports:
+      - "9200:9200"
+    networks:
+      - pos-network
+    profiles:
+      - logging
+
+  # Kibana برای مشاهده لاگ‌ها
+  pos-kibana:
+    image: docker.elastic.co/kibana/kibana:7.17.0
+    container_name: pos-sdk-7220-kibana
+    restart: unless-stopped
+    environment:
+      - ELASTICSEARCH_HOSTS=http://pos-elasticsearch:9200
+    ports:
+      - "5601:5601"
+    networks:
+      - pos-network
+    depends_on:
+      - pos-elasticsearch
+    profiles:
+      - logging
+
+  # Filebeat برای جمع‌آوری لاگ‌ها
+  pos-filebeat:
+    image: docker.elastic.co/beats/filebeat:7.17.0
+    container_name: pos-sdk-7220-filebeat
+    restart: unless-stopped
+    user: root
+    volumes:
+      - ./docker/filebeat/filebeat.yml:/usr/share/filebeat/filebeat.yml:ro
+      - pos-logs:/var/log/pos-app:ro
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - /proc/:/host/proc/:ro
+      - /sys/fs/cgroup/:/host/sys/fs/cgroup:ro
+    networks:
+      - pos-network
+    depends_on:
+      - pos-elasticsearch
+    profiles:
+      - logging
 
 volumes:
-  mongo_data:
+  # حجم‌های اصلی
+  pos-logs:
+    driver: local
+  pos-data:
+    driver: local
+  pos-config:
+    driver: local
+  
+  # حجم‌های توسعه
+  pos-dev-logs:
+    driver: local
+  pos-dev-data:
+    driver: local
+  
+  # حجم‌های مستندات
+  pos-docs:
+    driver: local
+  
+  # حجم‌های پایگاه داده
+  pos-db-data:
+    driver: local
+  
+  # حجم‌های Redis
+  pos-redis-data:
+    driver: local
+  
+  # حجم‌های Nginx
+  pos-nginx-logs:
+    driver: local
+  
+  # حجم‌های مانیتورینگ
+  pos-prometheus-data:
+    driver: local
+  pos-grafana-data:
+    driver: local
+  
+  # حجم‌های لاگ
+  pos-elasticsearch-data:
+    driver: local
 
 networks:
-  banking-network:
+  pos-network:
     driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+
+# تنظیمات اضافی
+x-logging: &default-logging
+  driver: "json-file"
+  options:
+    max-size: "10m"
+    max-file: "3"
+
+x-healthcheck: &default-healthcheck
+  test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+  interval: 30s
+  timeout: 10s
+  retries: 3
+  start_period: 60s

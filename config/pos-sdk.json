@@ -1,0 +1,98 @@
+{
+  "device": {
+    "deviceId": "POS_7220_001",
+    "model": "7220",
+    "firmware": "1.0.0",
+    "autoRestart": true,
+    "healthCheckInterval": 30000
+  },
+  "security": {
+    "enabled": true,
+    "algorithm": "aes-256-gcm",
+    "keyLength": 32,
+    "ivLength": 16,
+    "saltLength": 64,
+    "iterations": 100000,
+    "pciCompliance": {
+      "enabled": true,
+      "encryptionLevel": "AES-256",
+      "keyRotationDays": 90,
+      "auditLogging": true,
+      "secureDeletion": true
+    }
+  },
+  "hardware": {
+    "cardReader": {
+      "port": "/dev/ttyUSB0",
+      "baudRate": 9600,
+      "dataBits": 8,
+      "stopBits": 1,
+      "parity": "none",
+      "timeout": 5000
+    },
+    "printer": {
+      "port": "/dev/ttyUSB1",
+      "baudRate": 9600,
+      "paperWidth": 80,
+      "dpi": 203,
+      "timeout": 10000
+    }
+  },
+  "network": {
+    "primaryConnection": "wifi",
+    "wifi": {
+      "ssid": "YourWiFiSSID",
+      "password": "YourWiFiPassword",
+      "security": "WPA2",
+      "autoConnect": true
+    },
+    "cellular": {
+      "apn": "internet",
+      "username": "",
+      "password": "",
+      "autoConnect": true
+    },
+    "usb": {
+      "enabled": true,
+      "autoMount": true
+    },
+    "server": {
+      "host": "api.pos7220.com",
+      "port": 443,
+      "secure": true,
+      "timeout": 30000
+    },
+    "ota": {
+      "enabled": true,
+      "checkInterval": 3600000,
+      "autoUpdate": false
+    }
+  },
+  "transactions": {
+    "autoSync": true,
+    "syncInterval": 300000,
+    "maxRetries": 3,
+    "batchSize": 100,
+    "currency": "IRR",
+    "timezone": "Asia/Tehran"
+  },
+  "logging": {
+    "level": "info",
+    "enableConsole": true,
+    "enableFile": true,
+    "logDir": "logs",
+    "maxSize": "20m",
+    "maxFiles": "14d",
+    "format": "json"
+  },
+  "monitoring": {
+    "enabled": true,
+    "metricsInterval": 60000,
+    "alertThresholds": {
+      "cpu": 80,
+      "memory": 85,
+      "disk": 90,
+      "temperature": 70
+    }
+  }
+}
