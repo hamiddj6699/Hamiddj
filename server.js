@@ -1,118 +1,390 @@
-require('dotenv').config();
+/**
+ * سرور اصلی سیستم صدور کارت بانکی
+ * Main Banking Card Issuance System Server
+ */
+
 const express = require('express');
+const path = require('path');
 const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
-const path = require('path');
-const connectDB = require('./config/database');
+const compression = require('compression');
 
-// Import routes
-const authRoutes = require('./routes/auth');
-const accountRoutes = require('./routes/accounts');
-const cardRoutes = require('./routes/cards');
-const bankingOperationsRoutes = require('./routes/banking-operations');
+// سرویس‌های سیستم
+const CompleteCardIssuance = require('./services/completeCardIssuance');
 
+// تنظیمات
+const config = require('./config/system-config');
+
+// ایجاد اپلیکیشن Express
 const app = express();
 
-// Connect to MongoDB
-connectDB();
-
-// Security middleware
-app.use(helmet());
-
-// CORS configuration
-app.use(cors({
-  origin: process.env.NODE_ENV === 'production' 
-    ? ['https://yourdomain.com'] 
-    : ['http://localhost:3000', 'http://localhost:3001'],
-  credentials: true
+// تنظیمات امنیتی
+app.use(helmet({
+    contentSecurityPolicy: {
+        directives: {
+            defaultSrc: ["'self'"],
+            styleSrc: ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net", "https://cdnjs.cloudflare.com"],
+            scriptSrc: ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net", "https://cdnjs.cloudflare.com"],
+            fontSrc: ["'self'", "https://cdnjs.cloudflare.com"],
+            imgSrc: ["'self'", "data:", "https:"],
+            connectSrc: ["'self'"]
+        }
+    }
 }));
 
-// Rate limiting
-const limiter = rateLimit({
-  windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS) || 15 * 60 * 1000, // 15 minutes
-  max: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS) || 100, // limit each IP to 100 requests per windowMs
-  message: {
-    success: false,
-    message: 'تعداد درخواست‌ها از حد مجاز بیشتر شده است. لطفاً بعداً تلاش کنید.'
-  },
-  standardHeaders: true,
-  legacyHeaders: false,
-});
+// تنظیمات CORS
+app.use(cors({
+    origin: process.env.ALLOWED_ORIGINS ? process.env.ALLOWED_ORIGINS.split(',') : ['http://localhost:3000'],
+    credentials: true
+}));
 
+// تنظیمات Rate Limiting
+const limiter = rateLimit({
+    windowMs: config.security.rateLimit.windowMs,
+    max: config.security.rateLimit.maxRequests,
+    message: {
+        error: 'تعداد درخواست‌ها بیش از حد مجاز است. لطفاً کمی صبر کنید.',
+        retryAfter: Math.ceil(config.security.rateLimit.windowMs / 1000)
+    },
+    standardHeaders: true,
+    legacyHeaders: false
+});
 app.use('/api/', limiter);
 
-// Body parser middleware
+// فشرده‌سازی
+app.use(compression());
+
+// پارسر JSON
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// Serve static files
-app.use(express.static('public'));
+// سرو فایل‌های استاتیک
+app.use(express.static(path.join(__dirname, 'public')));
 
-// Serve the main application for all routes
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
-});
-
-// Request logging middleware
+// میدلور لاگ
 app.use((req, res, next) => {
-  console.log(`${new Date().toISOString()} - ${req.method} ${req.path}`);
-  next();
+    const start = Date.now();
+    res.on('finish', () => {
+        const duration = Date.now() - start;
+        console.log(`${req.method} ${req.originalUrl} - ${res.statusCode} - ${duration}ms`);
+    });
+    next();
 });
 
-// Routes
-app.use('/api/auth', authRoutes);
-app.use('/api/accounts', accountRoutes);
-app.use('/api/cards', cardRoutes);
-app.use('/api/banking', bankingOperationsRoutes);
+// راه‌اندازی سرویس صدور کارت
+let cardIssuanceService = null;
 
-// Health check endpoint
-app.get('/health', (req, res) => {
-  res.json({
-    success: true,
-    message: 'Banking API is running',
-    timestamp: new Date().toISOString(),
-    environment: process.env.NODE_ENV
-  });
+async function initializeServices() {
+    try {
+        console.log('🚀 راه‌اندازی سرویس‌های سیستم...');
+        
+        cardIssuanceService = new CompleteCardIssuance(config);
+        await cardIssuanceService.initialize();
+        
+        console.log('✅ سرویس‌های سیستم راه‌اندازی شدند');
+    } catch (error) {
+        console.error('❌ خطا در راه‌اندازی سرویس‌ها:', error);
+        process.exit(1);
+    }
+}
+
+// API Routes
+
+// Health Check
+app.get('/api/health', (req, res) => {
+    res.json({
+        status: 'OK',
+        timestamp: new Date().toISOString(),
+        uptime: process.uptime(),
+        version: '1.0.0',
+        environment: process.env.NODE_ENV || 'development'
+    });
 });
 
-// 404 handler
-app.use('*', (req, res) => {
-  res.status(404).json({
-    success: false,
-    message: 'مسیر مورد نظر یافت نشد'
-  });
+// صدور کارت
+app.post('/api/cards/issue', async (req, res) => {
+    try {
+        if (!cardIssuanceService) {
+            return res.status(503).json({
+                success: false,
+                error: 'سرویس صدور کارت در دسترس نیست'
+            });
+        }
+
+        const { customerData, accountData, cardType, options } = req.body;
+
+        // اعتبارسنجی ورودی
+        if (!customerData || !accountData || !cardType) {
+            return res.status(400).json({
+                success: false,
+                error: 'اطلاعات مشتری، حساب و نوع کارت الزامی است'
+            });
+        }
+
+        // صدور کارت
+        const card = await cardIssuanceService.issueCompleteCard(
+            customerData,
+            accountData,
+            cardType,
+            options
+        );
+
+        res.json({
+            success: true,
+            message: 'کارت با موفقیت صادر شد',
+            card: {
+                cardNumber: card.formattedCardNumber,
+                pin: card.pin,
+                cvv2: card.cvv2,
+                expiryDate: card.expiryDate,
+                track1: card.track1,
+                track2: card.track2,
+                status: card.status,
+                issuedAt: card.issuedAt
+            }
+        });
+
+    } catch (error) {
+        console.error('خطا در صدور کارت:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message || 'خطا در صدور کارت'
+        });
+    }
 });
 
-// Global error handler
+// دریافت لیست کارت‌ها
+app.get('/api/cards', async (req, res) => {
+    try {
+        if (!cardIssuanceService) {
+            return res.status(503).json({
+                success: false,
+                error: 'سرویس صدور کارت در دسترس نیست'
+            });
+        }
+
+        const cards = await cardIssuanceService.getAllCards();
+        
+        // حذف اطلاعات حساس
+        const safeCards = cards.map(card => ({
+            cardNumber: card.formattedCardNumber,
+            customerName: card.customerData.fullName,
+            cardType: card.cardType,
+            bankCode: card.accountData.bankCode,
+            status: card.status,
+            issuedAt: card.issuedAt,
+            expiryDate: card.expiryDate
+        }));
+
+        res.json({
+            success: true,
+            cards: safeCards,
+            total: safeCards.length
+        });
+
+    } catch (error) {
+        console.error('خطا در دریافت کارت‌ها:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message || 'خطا در دریافت کارت‌ها'
+        });
+    }
+});
+
+// دریافت کارت خاص
+app.get('/api/cards/:cardNumber', async (req, res) => {
+    try {
+        if (!cardIssuanceService) {
+            return res.status(503).json({
+                success: false,
+                error: 'سرویس صدور کارت در دسترس نیست'
+            });
+        }
+
+        const { cardNumber } = req.params;
+        const card = await cardIssuanceService.getCard(cardNumber);
+
+        if (!card) {
+            return res.status(404).json({
+                success: false,
+                error: 'کارت یافت نشد'
+            });
+        }
+
+        // حذف اطلاعات حساس
+        const safeCard = {
+            cardNumber: card.formattedCardNumber,
+            customerData: {
+                fullName: card.customerData.fullName,
+                nationalId: card.customerData.nationalId,
+                phone: card.customerData.phone,
+                email: card.customerData.email
+            },
+            accountData: {
+                accountNumber: card.accountData.accountNumber,
+                bankCode: card.accountData.bankCode,
+                accountType: card.accountData.accountType
+            },
+            cardType: card.cardType,
+            status: card.status,
+            issuedAt: card.issuedAt,
+            expiryDate: card.expiryDate
+        };
+
+        res.json({
+            success: true,
+            card: safeCard
+        });
+
+    } catch (error) {
+        console.error('خطا در دریافت کارت:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message || 'خطا در دریافت کارت'
+        });
+    }
+});
+
+// دریافت لاگ عملیات
+app.get('/api/operations/log', async (req, res) => {
+    try {
+        if (!cardIssuanceService) {
+            return res.status(503).json({
+                success: false,
+                error: 'سرویس صدور کارت در دسترس نیست'
+            });
+        }
+
+        const log = await cardIssuanceService.getOperationLog();
+        
+        res.json({
+            success: true,
+            log: log,
+            total: log.length
+        });
+
+    } catch (error) {
+        console.error('خطا در دریافت لاگ عملیات:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message || 'خطا در دریافت لاگ عملیات'
+        });
+    }
+});
+
+// آمار سیستم
+app.get('/api/stats', async (req, res) => {
+    try {
+        if (!cardIssuanceService) {
+            return res.status(503).json({
+                success: false,
+                error: 'سرویس صدور کارت در دسترس نیست'
+            });
+        }
+
+        const cards = await cardIssuanceService.getAllCards();
+        const log = await cardIssuanceService.getOperationLog();
+
+        const stats = {
+            totalCards: cards.length,
+            activeCards: cards.filter(card => card.status === 'ACTIVE').length,
+            todayIssued: cards.filter(card => {
+                const today = new Date().toDateString();
+                return card.issuedAt.toDateString() === today;
+            }).length,
+            totalOperations: log.length,
+            cardTypes: {
+                DEBIT: cards.filter(card => card.cardType === 'DEBIT').length,
+                CREDIT: cards.filter(card => card.cardType === 'CREDIT').length,
+                BUSINESS: cards.filter(card => card.cardType === 'BUSINESS').length
+            },
+            banks: {
+                '010': cards.filter(card => card.accountData.bankCode === '010').length,
+                '020': cards.filter(card => card.accountData.bankCode === '020').length,
+                '054': cards.filter(card => card.accountData.bankCode === '054').length
+            }
+        };
+
+        res.json({
+            success: true,
+            stats: stats
+        });
+
+    } catch (error) {
+        console.error('خطا در دریافت آمار:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message || 'خطا در دریافت آمار'
+        });
+    }
+});
+
+// Route برای SPA
+app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+// Error Handler
 app.use((error, req, res, next) => {
-  console.error('Global error:', error);
-  
-  res.status(error.status || 500).json({
-    success: false,
-    message: error.message || 'خطای داخلی سرور',
-    ...(process.env.NODE_ENV === 'development' && { stack: error.stack })
-  });
+    console.error('خطای سرور:', error);
+    res.status(500).json({
+        success: false,
+        error: 'خطای داخلی سرور'
+    });
 });
 
-const PORT = process.env.PORT || 3000;
-
-app.listen(PORT, () => {
-  console.log(`🚀 Banking API Server running on port ${PORT}`);
-  console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
-  console.log(`🔐 JWT Secret: ${process.env.JWT_SECRET ? 'Configured' : 'Not configured'}`);
-  console.log(`🗄️  Database: ${process.env.MONGODB_URI ? 'Configured' : 'Not configured'}`);
+// 404 Handler
+app.use((req, res) => {
+    res.status(404).json({
+        success: false,
+        error: 'مسیر یافت نشد'
+    });
 });
 
-// Graceful shutdown
-process.on('SIGTERM', () => {
-  console.log('SIGTERM received, shutting down gracefully');
-  process.exit(0);
+// Graceful Shutdown
+process.on('SIGTERM', async () => {
+    console.log('📋 دریافت سیگنال SIGTERM، در حال بستن سرور...');
+    
+    if (cardIssuanceService) {
+        await cardIssuanceService.closeService();
+    }
+    
+    process.exit(0);
 });
 
-process.on('SIGINT', () => {
-  console.log('SIGINT received, shutting down gracefully');
-  process.exit(0);
+process.on('SIGINT', async () => {
+    console.log('📋 دریافت سیگنال SIGINT، در حال بستن سرور...');
+    
+    if (cardIssuanceService) {
+        await cardIssuanceService.closeService();
+    }
+    
+    process.exit(0);
 });
 
-module.exports = app;
+// راه‌اندازی سرور
+async function startServer() {
+    try {
+        // راه‌اندازی سرویس‌ها
+        await initializeServices();
+        
+        // شروع سرور
+        const port = config.server.port;
+        const host = config.server.host;
+        
+        app.listen(port, host, () => {
+            console.log('🚀 سرور سیستم صدور کارت بانکی راه‌اندازی شد');
+            console.log(`📍 آدرس: http://${host}:${port}`);
+            console.log(`🌍 محیط: ${config.server.environment}`);
+            console.log(`⏰ زمان راه‌اندازی: ${new Date().toLocaleString('fa-IR')}`);
+        });
+        
+    } catch (error) {
+        console.error('❌ خطا در راه‌اندازی سرور:', error);
+        process.exit(1);
+    }
+}
+
+// شروع سرور
+startServer();
