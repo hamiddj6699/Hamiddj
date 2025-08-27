@@ -1,0 +1,460 @@
+# پروفایل‌های استاندارد بانکی ایران
+# Iranian Banking Standards Configuration
+
+# پروفایل‌های BIN بانک‌های ایران
+bin_profiles:
+  # بانک ملی ایران
+  - issuer_name: "بانک ملی ایران"
+    bin_range: "603799-603799"
+    product_type: "DEBIT"
+    domestic_network: "SHETAB"
+    international_scheme: "VISA"
+    velocity_limits:
+      daily_atm: 5000000
+      daily_pos: 10000000
+      monthly_total: 100000000
+    card_artwork_id: "MELI_DEBIT_V1"
+    risk_profile_id: "MELI_DEBIT_RISK_1"
+    three_ds_profile_id: "MELI_3DS_V1"
+    pin_policy:
+      length: 4
+      allow_repeated_digits: false
+      allow_sequential_digits: false
+      max_attempts: 3
+      lockout_duration: 24 # ساعت
+
+  # بانک صادرات ایران
+  - issuer_name: "بانک صادرات ایران"
+    bin_range: "603769-603769"
+    product_type: "DEBIT"
+    domestic_network: "SHETAB"
+    international_scheme: "MASTERCARD"
+    velocity_limits:
+      daily_atm: 3000000
+      daily_pos: 8000000
+      monthly_total: 80000000
+    card_artwork_id: "EXPORT_DEBIT_V1"
+    risk_profile_id: "EXPORT_DEBIT_RISK_1"
+    three_ds_profile_id: "EXPORT_3DS_V1"
+    pin_policy:
+      length: 4
+      allow_repeated_digits: false
+      allow_sequential_digits: false
+      max_attempts: 3
+      lockout_duration: 24
+
+  # بانک پارسیان
+  - issuer_name: "بانک پارسیان"
+    bin_range: "622106-622106"
+    product_type: "DEBIT"
+    domestic_network: "SHETAB"
+    international_scheme: "VISA"
+    velocity_limits:
+      daily_atm: 4000000
+      daily_pos: 9000000
+      monthly_total: 90000000
+    card_artwork_id: "PARSIAN_DEBIT_V1"
+    risk_profile_id: "PARSIAN_DEBIT_RISK_1"
+    three_ds_profile_id: "PARSIAN_3DS_V1"
+    pin_policy:
+      length: 4
+      allow_repeated_digits: false
+      allow_sequential_digits: false
+      max_attempts: 3
+      lockout_duration: 24
+
+  # بانک ملت
+  - issuer_name: "بانک ملت"
+    bin_range: "610433-610433"
+    product_type: "DEBIT"
+    domestic_network: "SHETAB"
+    international_scheme: "MASTERCARD"
+    velocity_limits:
+      daily_atm: 6000000
+      daily_pos: 12000000
+      monthly_total: 120000000
+    card_artwork_id: "MELLAT_DEBIT_V1"
+    risk_profile_id: "MELLAT_DEBIT_RISK_1"
+    three_ds_profile_id: "MELLAT_3DS_V1"
+    pin_policy:
+      length: 4
+      allow_repeated_digits: false
+      allow_sequential_digits: false
+      max_attempts: 3
+      lockout_duration: 24
+
+  # بانک تجارت
+  - issuer_name: "بانک تجارت"
+    bin_range: "589463-589463"
+    product_type: "DEBIT"
+    domestic_network: "SHETAB"
+    international_scheme: "VISA"
+    velocity_limits:
+      daily_atm: 3500000
+      daily_pos: 7500000
+      monthly_total: 75000000
+    card_artwork_id: "TEJARAT_DEBIT_V1"
+    risk_profile_id: "TEJARAT_DEBIT_RISK_1"
+    three_ds_profile_id: "TEJARAT_3DS_V1"
+    pin_policy:
+      length: 4
+      allow_repeated_digits: false
+      allow_sequential_digits: false
+      max_attempts: 3
+      lockout_duration: 24
+
+# پروفایل‌های EMV برای کارت‌های ایران
+emv_profiles:
+  # پروفایل استاندارد ایران - Debit
+  - profile_id: "IRAN_DEBIT_STANDARD_V1"
+    aid: "A0000002480200"
+    application_label: "IRAN DEBIT"
+    terminal_capabilities: "E0F8C8"
+    cvm_list: "1E0302031F0000"
+    arqc_algorithm: "EMV_SDA"
+    issuer_action_codes: "0000000000000000"
+    application_interchange_profile: "0080"
+    application_usage_control: "0000"
+    application_version_number: "0100"
+    issuer_application_data: "0000000000000000"
+    static_data_authentication_tag_list: "8E"
+    dynamic_data_authentication_tag_list: "9F4D"
+    cardholder_verification_method_results: "9F34"
+    terminal_verification_results: "9505"
+    issuer_authentication_data: "9103"
+    application_cryptogram: "9F26"
+    application_transaction_counter: "9F36"
+    application_unpredictable_number: "9F37"
+    card_risk_management_data_object_list_1: "8C"
+    card_risk_management_data_object_list_2: "8D"
+    issuer_public_key_certificate: "90"
+    issuer_public_key_remainder: "92"
+    signed_dynamic_application_data: "93"
+    application_file_locator: "94"
+    track_2_equivalent_data: "57"
+    application_primary_account_number: "5A"
+    application_primary_account_number_sequence_number: "5F34"
+    application_expiration_date: "5F24"
+    application_effective_date: "5F25"
+    cardholder_name: "5F20"
+    track_1_discretionary_data: "9F1F"
+    track_2_discretionary_data: "9F20"
+    track_3_discretionary_data: "9F21"
+    cardholder_verification_method_list: "8E"
+    cardholder_verification_method_results: "9F34"
+    issuer_public_key_exponent: "9F32"
+    issuer_public_key_certificate: "90"
+    issuer_public_key_remainder: "92"
+    signed_dynamic_application_data: "93"
+    application_file_locator: "94"
+    track_2_equivalent_data: "57"
+    application_primary_account_number: "5A"
+    application_primary_account_number_sequence_number: "5F34"
+    application_expiration_date: "5F24"
+    application_effective_date: "5F25"
+    cardholder_name: "5F20"
+    track_1_discretionary_data: "9F1F"
+    track_2_discretionary_data: "9F20"
+    track_3_discretionary_data: "9F21"
+    cardholder_verification_method_list: "8E"
+    cardholder_verification_method_results: "9F34"
+    issuer_public_key_exponent: "9F32"
+
+  # پروفایل پیشرفته ایران - Credit
+  - profile_id: "IRAN_CREDIT_ADVANCED_V1"
+    aid: "A0000002480201"
+    application_label: "IRAN CREDIT"
+    terminal_capabilities: "E0F8C8"
+    cvm_list: "1E0302031F0000"
+    arqc_algorithm: "EMV_DDA"
+    issuer_action_codes: "0000000000000000"
+    application_interchange_profile: "0080"
+    application_usage_control: "0000"
+    application_version_number: "0100"
+    issuer_application_data: "0000000000000000"
+    static_data_authentication_tag_list: "8E"
+    dynamic_data_authentication_tag_list: "9F4D"
+    cardholder_verification_method_results: "9F34"
+    terminal_verification_results: "9505"
+    issuer_authentication_data: "9103"
+    application_cryptogram: "9F26"
+    application_transaction_counter: "9F36"
+    application_unpredictable_number: "9F37"
+    card_risk_management_data_object_list_1: "8C"
+    card_risk_management_data_object_list_2: "8D"
+    issuer_public_key_certificate: "90"
+    issuer_public_key_remainder: "92"
+    signed_dynamic_application_data: "93"
+    application_file_locator: "94"
+    track_2_equivalent_data: "57"
+    application_primary_account_number: "5A"
+    application_primary_account_number_sequence_number: "5F34"
+    application_expiration_date: "5F24"
+    application_effective_date: "5F25"
+    cardholder_name: "5F20"
+    track_1_discretionary_data: "9F1F"
+    track_2_discretionary_data: "9F20"
+    track_3_discretionary_data: "9F21"
+    cardholder_verification_method_list: "8E"
+    cardholder_verification_method_results: "9F34"
+    issuer_public_key_exponent: "9F32"
+    issuer_public_key_certificate: "90"
+    issuer_public_key_remainder: "92"
+    signed_dynamic_application_data: "93"
+    application_file_locator: "94"
+    track_2_equivalent_data: "57"
+    application_primary_account_number: "5A"
+    application_primary_account_number_sequence_number: "5F34"
+    application_expiration_date: "5F24"
+    application_effective_date: "5F25"
+    cardholder_name: "5F20"
+    track_1_discretionary_data: "9F1F"
+    track_2_discretionary_data: "9F20"
+    track_3_discretionary_data: "9F21"
+    cardholder_verification_method_list: "8E"
+    cardholder_verification_method_results: "9F34"
+    issuer_public_key_exponent: "9F32"
+
+# مشخصات سوئیچ شبکه شتاب
+switch_specs:
+  protocol: "ISO8583"
+  transport: "TCP_MTLS"
+  host: "shetab-switch.ir"
+  port: 8443
+  timeout: 30000
+  retry_attempts: 3
+  backoff_delay: 1000
+  
+  # نگاشت MTI
+  mti_map:
+    - "0100"  # Authorization Request
+    - "0110"  # Authorization Response
+    - "0200"  # Financial Request
+    - "0210"  # Financial Response
+    - "0400"  # Reversal Request
+    - "0410"  # Reversal Response
+    - "0800"  # Network Management Request
+    - "0810"  # Network Management Response
+    - "0820"  # Network Management Advice
+    - "0830"  # Network Management Advice Response
+
+  # نگاشت Bitmap
+  bitmap: "primary"
+  
+  # مشخصات فیلدها
+  field_specs:
+    field_2: "PAN"
+    field_3: "Processing Code"
+    field_4: "Amount, Transaction"
+    field_7: "Transmission Date & Time"
+    field_11: "STAN"
+    field_12: "Local Transaction Time"
+    field_13: "Local Transaction Date"
+    field_14: "Expiration Date"
+    field_22: "Point of Service Entry Mode"
+    field_23: "Card Sequence Number"
+    field_25: "Point of Service Condition Code"
+    field_32: "Acquiring Institution ID Code"
+    field_35: "Track 2 Equivalent Data"
+    field_37: "Retrieval Reference Number"
+    field_39: "Response Code"
+    field_41: "Card Acceptor Terminal ID"
+    field_42: "Card Acceptor ID Code"
+    field_43: "Card Acceptor Name/Location"
+    field_49: "Currency Code, Transaction"
+    field_52: "Personal Identification Number (PIN) Data"
+    field_55: "ICC System Related Data"
+    field_60: "Reserved for National Use"
+    field_62: "Reserved for Private Use"
+    field_63: "Reserved for National Use"
+    field_64: "Message Authentication Code (MAC)"
+    field_90: "Original Data Elements"
+    field_95: "Replacement Amounts"
+    field_100: "Receiving Institution ID Code"
+    field_102: "Account Identification 1"
+    field_103: "Account Identification 2"
+    field_128: "Message Authentication Code"
+
+  # کدهای پردازش
+  processing_codes:
+    purchase: "000000"
+    cash_withdrawal: "010000"
+    balance_inquiry: "310000"
+    transfer: "400000"
+    payment: "500000"
+    refund: "200000"
+    reversal: "000000"
+
+  # کدهای پاسخ
+  response_codes:
+    approved: "00"
+    declined: "05"
+    insufficient_funds: "51"
+    expired_card: "54"
+    invalid_pin: "55"
+    card_not_supported: "57"
+    transaction_not_permitted: "57"
+    invalid_amount: "13"
+    invalid_card: "14"
+    system_error: "96"
+    network_error: "91"
+    timeout: "68"
+
+# مشخصات بانک مرکزی
+central_bank_specs:
+  host: "api.cbi.ir"
+  port: 8443
+  protocol: "HTTPS_MTLS"
+  timeout: 30000
+  
+  # عملیات‌های پشتیبانی شده
+  supported_operations:
+    - "VERIFY_IDENTITY"
+    - "REGISTER_CARD"
+    - "UPDATE_CARD_STATUS"
+    - "GET_CARD_INFO"
+    - "VERIFY_ACCOUNT"
+    - "GET_ACCOUNT_BALANCE"
+    - "BLOCK_ACCOUNT"
+    - "UNBLOCK_ACCOUNT"
+
+# مشخصات بانک ملی
+national_bank_specs:
+  host: "api.bmi.ir"
+  port: 8443
+  protocol: "HTTPS_MTLS"
+  timeout: 30000
+  
+  # عملیات‌های پشتیبانی شده
+  supported_operations:
+    - "VERIFY_ACCOUNT"
+    - "GET_ACCOUNT_BALANCE"
+    - "GET_ACCOUNT_STATUS"
+    - "BLOCK_ACCOUNT"
+    - "UNBLOCK_ACCOUNT"
+    - "GET_TRANSACTION_HISTORY"
+    - "VERIFY_CUSTOMER"
+
+# سیاست‌های امنیتی
+security_policies:
+  # سیاست PIN
+  pin_policy:
+    default_length: 4
+    min_length: 4
+    max_length: 6
+    allow_repeated_digits: false
+    allow_sequential_digits: false
+    allow_common_pins: false
+    max_attempts: 3
+    lockout_duration: 24 # ساعت
+    require_complexity: true
+    
+  # سیاست CVV2
+  cvv2_policy:
+    algorithm: "VISA_PVV"
+    length: 3
+    include_expiry: true
+    include_service_code: true
+    
+  # سیاست کلید
+  key_policy:
+    zmk_rotation_period: 90 # روز
+    zpk_rotation_period: 180 # روز
+    zdk_rotation_period: 365 # روز
+    require_quorum: true
+    min_quorum_size: 2
+    max_quorum_size: 4
+    
+  # سیاست تشریفات
+  ceremony_policy:
+    require_physical_presence: true
+    require_identity_verification: true
+    require_witness: true
+    min_participants: 2
+    max_participants: 6
+    recording_required: true
+    documentation_required: true
+
+# تنظیمات HSM
+hsm_config:
+  # نوع HSM
+  type: "THALES"
+  model: "PayShield 9000"
+  version: "3.0"
+  
+  # تنظیمات اتصال
+  connection:
+    protocol: "HTTPS"
+    port: 8443
+    timeout: 30000
+    retry_attempts: 3
+    
+  # تنظیمات کلید
+  key_config:
+    default_algorithm: "AES_256"
+    supported_algorithms: ["AES_128", "AES_256", "RSA_2048", "RSA_4096"]
+    key_wrapping: true
+    key_derivation: true
+    pin_generation: true
+    mac_generation: true
+    
+  # تنظیمات امنیتی
+  security:
+    require_authentication: true
+    require_authorization: true
+    audit_logging: true
+    key_export: false
+    key_import: true
+    key_backup: true
+    key_restore: true
+
+# تنظیمات DUKPT
+dukpt_config:
+  # کلیدهای اصلی
+  master_keys:
+    bdk_label: "BDK_MASTER"
+    ipek_label: "IPEK_DEFAULT"
+    
+  # تنظیمات تولید کلید
+  key_derivation:
+    method: "DUKPT"
+    key_type: "PIN"
+    session_duration: 24 # ساعت
+    max_sessions: 1000
+    
+  # تنظیمات KSN
+  ksn_config:
+    length: 20
+    include_timestamp: true
+    include_counter: true
+    include_device_id: true
+    
+  # تنظیمات ترجمه
+  translation:
+    supported_formats: ["ISO_0", "ISO_1", "ISO_3", "VISA_1", "VISA_3"]
+    require_authorization: true
+    log_all_translations: true
+
+# تنظیمات Zone Keys
+zone_key_config:
+  # کلیدهای Zone
+  zone_keys:
+    zmk_label: "ZMK_MASTER"
+    zpk_label: "ZPK_DEFAULT"
+    zdk_label: "ZDK_DEFAULT"
+    
+  # تنظیمات چرخش
+  rotation:
+    zmk_rotation_period: 90 # روز
+    zpk_rotation_period: 180 # روز
+    zdk_rotation_period: 365 # روز
+    require_ceremony: true
+    require_quorum: true
+    min_quorum_size: 2
+    
+  # تنظیمات توزیع
+  distribution:
+    method: "KEY_SPLITTING"
+    require_physical_delivery: true
+    require_receipt_confirmation: true
+    backup_required: true
