@@ -12,9 +12,14 @@ const compression = require('compression');
 
 // سرویس‌های سیستم
 const CompleteCardIssuance = require('./services/completeCardIssuance');
+const RealCardIssuanceService = require('./services/realCardIssuanceService');
 
 // تنظیمات
 const config = require('./config/system-config');
+
+// Import routes
+const realCardAPI = require('./routes/realCardAPI');
+const simpleRealCardAPI = require('./routes/simpleRealCardAPI');
 
 // ایجاد اپلیکیشن Express
 const app = express();
@@ -74,15 +79,21 @@ app.use((req, res, next) => {
 
 // راه‌اندازی سرویس صدور کارت
 let cardIssuanceService = null;
+let realCardIssuanceService = null;
 
 async function initializeServices() {
     try {
         console.log('🚀 راه‌اندازی سرویس‌های سیستم...');
         
+        // Initialize legacy service
         cardIssuanceService = new CompleteCardIssuance(config);
         await cardIssuanceService.initialize();
         
-        console.log('✅ سرویس‌های سیستم راه‌اندازی شدند');
+        // Initialize real card service
+        realCardIssuanceService = new RealCardIssuanceService(config);
+        await realCardIssuanceService.initialize();
+        
+        console.log('✅ تمام سرویس‌ها راه‌اندازی شدند');
     } catch (error) {
         console.error('❌ خطا در راه‌اندازی سرویس‌ها:', error);
         process.exit(1);
@@ -350,6 +361,10 @@ process.on('SIGTERM', async () => {
         await cardIssuanceService.closeService();
     }
     
+    if (realCardIssuanceService) {
+        await realCardIssuanceService.closeService();
+    }
+    
     process.exit(0);
 });
 
@@ -360,6 +375,10 @@ process.on('SIGINT', async () => {
         await cardIssuanceService.closeService();
     }
     
+    if (realCardIssuanceService) {
+        await realCardIssuanceService.closeService();
+    }
+    
     process.exit(0);
 });
 
@@ -368,6 +387,18 @@ async function startServer() {
     try {
         // راه‌اندازی سرویس‌ها
         await initializeServices();
+        
+        // تعریف مسیرهای API ساده واقعی کارت (بدون نیاز به سرویس‌های پیچیده)
+        app.use('/api/simple-real-cards', simpleRealCardAPI);
+        console.log('✅ مسیرهای API ساده واقعی کارت تعریف شدند');
+        
+        // تعریف مسیرهای API واقعی کارت بعد از راه‌اندازی سرویس‌ها
+        try {
+            app.use('/api/real-cards', realCardAPI);
+            console.log('✅ مسیرهای API واقعی کارت تعریف شدند');
+        } catch (error) {
+            console.warn('⚠️ مسیرهای API واقعی کارت تعریف نشدند:', error.message);
+        }
         
         // شروع سرور
         const port = config.server.port;
