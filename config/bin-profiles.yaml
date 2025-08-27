@@ -1,0 +1,299 @@
+# پروفایل‌های BIN بانک‌های ایران
+# Iranian Banks BIN Profiles Configuration
+
+bin_profiles:
+  # بانک ملی ایران
+  - issuer_name: "بانک ملی ایران"
+    bank_code: "010"
+    bin_range: "603799-603799"
+    product_type: "DEBIT"
+    domestic_network: "SHETAB"
+    international_scheme: "VISA"
+    card_level: "CLASSIC"
+    velocity_limits:
+      daily_atm: 5000000
+      daily_pos: 10000000
+      monthly_total: 100000000
+      single_max: 1000000
+    card_artwork_id: "MELI_DEBIT_V1"
+    risk_profile_id: "MELI_DEBIT_RISK_1"
+    three_ds_profile_id: "MELI_3DS_V1"
+    pin_policy:
+      length: 4
+      allow_repeated_digits: false
+      allow_sequential_digits: false
+      allow_common_pins: false
+      max_attempts: 3
+      lockout_duration: 24
+      require_complexity: true
+    cvv2_policy:
+      algorithm: "VISA_PVV"
+      length: 3
+      include_expiry: true
+      include_service_code: true
+    emv_profile: "IRAN_DEBIT_STANDARD_V1"
+    contactless_enabled: true
+    online_pin: true
+    offline_pin: true
+    signature_required: false
+
+  # بانک صادرات ایران
+  - issuer_name: "بانک صادرات ایران"
+    bank_code: "020"
+    bin_range: "603769-603769"
+    product_type: "DEBIT"
+    domestic_network: "SHETAB"
+    international_scheme: "MASTERCARD"
+    card_level: "CLASSIC"
+    velocity_limits:
+      daily_atm: 3000000
+      daily_pos: 8000000
+      monthly_total: 80000000
+      single_max: 800000
+    card_artwork_id: "EXPORT_DEBIT_V1"
+    risk_profile_id: "EXPORT_DEBIT_RISK_1"
+    three_ds_profile_id: "EXPORT_3DS_V1"
+    pin_policy:
+      length: 4
+      allow_repeated_digits: false
+      allow_sequential_digits: false
+      allow_common_pins: false
+      max_attempts: 3
+      lockout_duration: 24
+      require_complexity: true
+    cvv2_policy:
+      algorithm: "IBM_3624"
+      length: 3
+      include_expiry: true
+      include_service_code: true
+    emv_profile: "IRAN_DEBIT_STANDARD_V1"
+    contactless_enabled: true
+    online_pin: true
+    offline_pin: true
+    signature_required: false
+
+  # بانک پارسیان
+  - issuer_name: "بانک پارسیان"
+    bank_code: "054"
+    bin_range: "622106-622106"
+    product_type: "DEBIT"
+    domestic_network: "SHETAB"
+    international_scheme: "VISA"
+    card_level: "GOLD"
+    velocity_limits:
+      daily_atm: 4000000
+      daily_pos: 9000000
+      monthly_total: 90000000
+      single_max: 900000
+    card_artwork_id: "PARSIAN_DEBIT_V1"
+    risk_profile_id: "PARSIAN_DEBIT_RISK_1"
+    three_ds_profile_id: "PARSIAN_3DS_V1"
+    pin_policy:
+      length: 4
+      allow_repeated_digits: false
+      allow_sequential_digits: false
+      allow_common_pins: false
+      max_attempts: 3
+      lockout_duration: 24
+      require_complexity: true
+    cvv2_policy:
+      algorithm: "VISA_PVV"
+      length: 3
+      include_expiry: true
+      include_service_code: true
+    emv_profile: "IRAN_DEBIT_ADVANCED_V1"
+    contactless_enabled: true
+    online_pin: true
+    offline_pin: true
+    signature_required: false
+
+  # بانک ملت
+  - issuer_name: "بانک ملت"
+    bank_code: "012"
+    bin_range: "610433-610433"
+    product_type: "DEBIT"
+    domestic_network: "SHETAB"
+    international_scheme: "MASTERCARD"
+    card_level: "PLATINUM"
+    velocity_limits:
+      daily_atm: 6000000
+      daily_pos: 12000000
+      monthly_total: 120000000
+      single_max: 1200000
+    card_artwork_id: "MELLAT_DEBIT_V1"
+    risk_profile_id: "MELLAT_DEBIT_RISK_1"
+    three_ds_profile_id: "MELLAT_3DS_V1"
+    pin_policy:
+      length: 4
+      allow_repeated_digits: false
+      allow_sequential_digits: false
+      allow_common_pins: false
+      max_attempts: 3
+      lockout_duration: 24
+      require_complexity: true
+    cvv2_policy:
+      algorithm: "IBM_3624"
+      length: 3
+      include_expiry: true
+      include_service_code: true
+    emv_profile: "IRAN_DEBIT_ADVANCED_V1"
+    contactless_enabled: true
+    online_pin: true
+    offline_pin: true
+    signature_required: false
+
+  # بانک تجارت
+  - issuer_name: "بانک تجارت"
+    bank_code: "018"
+    bin_range: "589463-589463"
+    product_type: "DEBIT"
+    domestic_network: "SHETAB"
+    international_scheme: "VISA"
+    card_level: "CLASSIC"
+    velocity_limits:
+      daily_atm: 3500000
+      daily_pos: 7500000
+      monthly_total: 75000000
+      single_max: 750000
+    card_artwork_id: "TEJARAT_DEBIT_V1"
+    risk_profile_id: "TEJARAT_DEBIT_RISK_1"
+    three_ds_profile_id: "TEJARAT_3DS_V1"
+    pin_policy:
+      length: 4
+      allow_repeated_digits: false
+      allow_sequential_digits: false
+      allow_common_pins: false
+      max_attempts: 3
+      lockout_duration: 24
+      require_complexity: true
+    cvv2_policy:
+      algorithm: "VISA_PVV"
+      length: 3
+      include_expiry: true
+      include_service_code: true
+    emv_profile: "IRAN_DEBIT_STANDARD_V1"
+    contactless_enabled: true
+    online_pin: true
+    offline_pin: true
+    signature_required: false
+
+  # بانک کشاورزی
+  - issuer_name: "بانک کشاورزی"
+    bank_code: "016"
+    bin_range: "603770-603770"
+    product_type: "DEBIT"
+    domestic_network: "SHETAB"
+    international_scheme: "MASTERCARD"
+    card_level: "CLASSIC"
+    velocity_limits:
+      daily_atm: 2500000
+      daily_pos: 6000000
+      monthly_total: 60000000
+      single_max: 600000
+    card_artwork_id: "KESHAVARZI_DEBIT_V1"
+    risk_profile_id: "KESHAVARZI_DEBIT_RISK_1"
+    three_ds_profile_id: "KESHAVARZI_3DS_V1"
+    pin_policy:
+      length: 4
+      allow_repeated_digits: false
+      allow_sequential_digits: false
+      allow_common_pins: false
+      max_attempts: 3
+      lockout_duration: 24
+      require_complexity: true
+    cvv2_policy:
+      algorithm: "IBM_3624"
+      length: 3
+      include_expiry: true
+      include_service_code: true
+    emv_profile: "IRAN_DEBIT_STANDARD_V1"
+    contactless_enabled: false
+    online_pin: true
+    offline_pin: true
+    signature_required: true
+
+  # بانک رفاه
+  - issuer_name: "بانک رفاه"
+    bank_code: "013"
+    bin_range: "589210-589210"
+    product_type: "DEBIT"
+    domestic_network: "SHETAB"
+    international_scheme: "VISA"
+    card_level: "CLASSIC"
+    velocity_limits:
+      daily_atm: 2000000
+      daily_pos: 5000000
+      monthly_total: 50000000
+      single_max: 500000
+    card_artwork_id: "REFAH_DEBIT_V1"
+    risk_profile_id: "REFAH_DEBIT_RISK_1"
+    three_ds_profile_id: "REFAH_3DS_V1"
+    pin_policy:
+      length: 4
+      allow_repeated_digits: false
+      allow_sequential_digits: false
+      allow_common_pins: false
+      max_attempts: 3
+      lockout_duration: 24
+      require_complexity: true
+    cvv2_policy:
+      algorithm: "VISA_PVV"
+      length: 3
+      include_expiry: true
+      include_service_code: true
+    emv_profile: "IRAN_DEBIT_STANDARD_V1"
+    contactless_enabled: false
+    online_pin: true
+    offline_pin: true
+    signature_required: true
+
+# تنظیمات کلی BIN
+bin_settings:
+  # طول شماره کارت
+  card_length: 16
+  
+  # طول BIN
+  bin_length: 6
+  
+  # طول شماره حساب
+  account_length: 9
+  
+  # طول رقم کنترل
+  check_digit_length: 1
+  
+  # الگوریتم تولید شماره کارت
+  card_number_algorithm: "LUHN"
+  
+  # فرمت شماره کارت
+  card_number_format: "XXXX-XXXX-XXXX-XXXX"
+  
+  # محدودیت‌های کلی
+  global_limits:
+    max_daily_transactions: 50
+    max_monthly_transactions: 1000
+    max_card_lifetime_years: 5
+    min_card_lifetime_years: 1
+  
+  # سیاست‌های امنیتی
+  security_policies:
+    require_3ds: true
+    require_cvv2: true
+    require_pin: true
+    require_signature: false
+    contactless_limit: 500000
+  
+  # تنظیمات EMV
+  emv_settings:
+    default_aid: "A0000002480200"
+    default_application_label: "IRAN DEBIT"
+    default_currency_code: "364"
+    default_country_code: "IR"
+    default_language_code: "FA"
+  
+  # تنظیمات شبکه
+  network_settings:
+    shetab_enabled: true
+    international_enabled: true
+    online_required: true
+    offline_limit: 100000
+    fallback_enabled: true
