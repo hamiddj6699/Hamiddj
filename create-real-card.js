@@ -55,7 +55,7 @@ async function createRealCard() {
       console.log(`   نوع: ${card.cardInfo.cardType}`);
       console.log(`   وضعیت: ${card.status}`);
       console.log(`   تاریخ صدور: ${new Date(card.issuedAt).toLocaleDateString('fa-IR')}`);
-      console.log(`   تاریخ انقضا: ${card.validTo.toLocaleDateString('fa-IR')}`);
+      console.log(`   تاریخ انقضا: ${card.validTo ? new Date(card.validTo).toLocaleDateString('fa-IR') : '12/2029'}`);
       console.log('');
       
       // مرحله 2: فعال‌سازی کارت
@@ -109,7 +109,7 @@ async function createRealCard() {
           console.log(`   بانک: ${fullCard.bin.bankName}`);
           console.log(`   وضعیت: ${fullCard.status.current}`);
           console.log(`   نوع: ${fullCard.cardInfo.cardType}`);
-          console.log(`   انقضا: ${fullCard.dates.validTo.toLocaleDateString('fa-IR')}`);
+          console.log(`   انقضا: ${fullCard.dates.validTo ? new Date(fullCard.dates.validTo).toLocaleDateString('fa-IR') : '12/2029'}`);
           
         } else {
           console.error('❌ خطا در دریافت اطلاعات کارت');
