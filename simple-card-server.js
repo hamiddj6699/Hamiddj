@@ -371,6 +371,96 @@ app.get('/api/stats', (req, res) => {
   }
 });
 
+// POS Authorization Endpoint
+app.post('/api/pos/authorize', (req, res) => {
+  try {
+    const { cardNumber, amount, pin, merchant } = req.body || {};
+
+    if (!cardNumber || typeof amount !== 'number' || amount <= 0 || !pin) {
+      return res.status(400).json({ success: false, error: 'درخواست نامعتبر است' });
+    }
+
+    const card = cards.find(c => c.cardNumber === cardNumber);
+    if (!card) {
+      return res.status(404).json({ success: false, error: 'کارت یافت نشد' });
+    }
+
+    if (card.status.current !== 'ACTIVE') {
+      return res.status(403).json({ success: false, error: 'کارت فعال نیست' });
+    }
+
+    if (card.security.pin !== pin) {
+      return res.status(401).json({ success: false, error: 'PIN اشتباه است' });
+    }
+
+    if (card.account.balance < amount) {
+      return res.status(402).json({ success: false, error: 'موجودی کافی نیست' });
+    }
+
+    // Basic velocity checks
+    if (amount > card.limits.singleMax) {
+      return res.status(403).json({ success: false, error: 'محدودیت هر تراکنش' });
+    }
+
+    // Generate auth data
+    const stan = Math.floor(100000 + Math.random() * 900000).toString();
+    const rrn = (Date.now().toString().slice(-6) + Math.floor(Math.random() * 1000000).toString().padStart(6, '0')).slice(-12);
+    const authCode = Math.floor(100000 + Math.random() * 900000).toString();
+
+    // Deduct balance
+    card.account.balance -= amount;
+
+    const txn = {
+      type: 'PURCHASE',
+      amount,
+      currency: 'IRR',
+      stan,
+      rrn,
+      authCode,
+      approved: true,
+      merchant: {
+        id: merchant?.id || 'MER123456',
+        name: merchant?.name || 'فروشگاه تست',
+        terminalId: merchant?.terminalId || 'TERM0001'
+      },
+      timestamp: new Date()
+    };
+
+    card.operations.push({
+      type: 'PURCHASE',
+      timestamp: txn.timestamp,
+      operator: { id: 'POS_SIM', name: 'POS Simulator', role: 'TERMINAL' },
+      details: `خرید موفق به مبلغ ${amount.toLocaleString('fa-IR')} ریال | RRN: ${rrn}`
+    });
+
+    const maskedPan = card.cardNumber.replace(/(\d{6})(\d+)(\d{4})/, (m, a, b, c) => a + 'X'.repeat(b.length) + c);
+
+    return res.json({
+      success: true,
+      message: 'تراکنش خرید تایید شد',
+      result: {
+        approved: true,
+        responseCode: '00',
+        authCode,
+        rrn,
+        stan,
+        amount,
+        currency: 'IRR',
+        card: {
+          panMasked: maskedPan,
+          bin: card.bin.code,
+          bankName: card.bin.bankName
+        },
+        merchant: txn.merchant,
+        balanceAfter: card.account.balance,
+        timestamp: txn.timestamp
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
 // Start server
 const PORT = 3002;
 app.listen(PORT, () => {
