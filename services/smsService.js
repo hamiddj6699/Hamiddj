@@ -1,4 +1,4 @@
-const axios = require('axios');
+// const axios = require('axios'); // در حالت توسعه نیاز نیست
 
 class SMSService {
   constructor(provider = 'kavehNegar') {
@@ -20,6 +20,28 @@ class SMSService {
   }
 
   async sendSMS(recipient, message) {
+    // بررسی حالت توسعه
+    if (process.env.SMS_DEVELOPMENT_MODE === 'true') {
+      console.log('🔧 حالت توسعه فعال - پیامک واقعی ارسال نمی‌شود');
+      console.log(`📱 گیرنده: ${recipient}`);
+      console.log(`💬 پیام: ${message}`);
+      console.log(`📤 فرستنده: ${this.config.sender}`);
+      
+      // شبیه‌سازی تاخیر ارسال
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // شبیه‌سازی پاسخ موفق
+      const mockMessageId = Math.random().toString(36).substr(2, 9);
+      return {
+        success: true,
+        messageId: mockMessageId,
+        cost: 0,
+        message: 'پیامک با موفقیت ارسال شد (حالت توسعه)',
+        development: true
+      };
+    }
+
+    // حالت تولید - استفاده از API واقعی
     if (!this.config.apiKey) {
       throw new Error('API key is not configured');
     }
@@ -54,6 +76,23 @@ class SMSService {
   }
 
   async getBalance() {
+    // بررسی حالت توسعه
+    if (process.env.SMS_DEVELOPMENT_MODE === 'true') {
+      console.log('🔧 حالت توسعه فعال - موجودی واقعی دریافت نمی‌شود');
+      
+      // شبیه‌سازی تاخیر
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      // شبیه‌سازی موجودی
+      return {
+        balance: 1000,
+        currency: 'تومان',
+        development: true,
+        message: 'موجودی شبیه‌سازی شده (حالت توسعه)'
+      };
+    }
+
+    // حالت تولید - استفاده از API واقعی
     if (!this.config.apiKey) {
       throw new Error('API key is not configured');
     }
@@ -78,6 +117,29 @@ class SMSService {
   }
 
   async getMessageStatus(messageId) {
+    // بررسی حالت توسعه
+    if (process.env.SMS_DEVELOPMENT_MODE === 'true') {
+      console.log('🔧 حالت توسعه فعال - وضعیت واقعی دریافت نمی‌شود');
+      console.log(`🆔 شناسه پیام: ${messageId}`);
+      
+      // شبیه‌سازی تاخیر
+      await new Promise(resolve => setTimeout(resolve, 300));
+      
+      // شبیه‌سازی وضعیت تصادفی
+      const randomStatus = Math.floor(Math.random() * 4) + 1;
+      const statusMap = { 1: 2, 2: 4, 3: 8, 4: 16 };
+      const status = statusMap[randomStatus];
+      
+      return {
+        messageId: messageId,
+        status: status,
+        statusText: this.getStatusText(status),
+        development: true,
+        message: 'وضعیت شبیه‌سازی شده (حالت توسعه)'
+      };
+    }
+
+    // حالت تولید - استفاده از API واقعی
     if (!this.config.apiKey) {
       throw new Error('API key is not configured');
     }
